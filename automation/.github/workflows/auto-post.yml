@@ -1,7 +1,35 @@
 name: Auto Post to Facebook
 on:
   schedule:
-    - cron: '0 12 * * *'   # كل يوم الساعة 12 ظهرًا UTC
+    - cron: '0 */6 * * *'   # 4 مرات يوميًا كل 6 ساعات (12، 6، 12، 6 بتوقيت UTC)
+  workflow_dispatch: {}
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: |
+          pip install pillow requests python-dotenv
+          pip install "transformers==4.57.1"
+          pip install "coqui-tts[codec]"
+          pip install torch torchaudio
+      - run: |
+          cd automation
+          python3 main.py
+        env:
+          COQUI_TOS_AGREED: "1"
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+EOFcat > .github/workflows/auto-post.yml << 'EOF'
+name: Auto Post to Facebook
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # 4 مرات يوميًا كل 6 ساعات (12، 6، 12، 6 بتوقيت UTC)
   workflow_dispatch: {}
 jobs:
   post:
